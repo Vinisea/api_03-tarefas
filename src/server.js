@@ -3,7 +3,6 @@ import { conn } from "./sequelize.js";
 
 //TABELAS
 import setorTabela from "./setorTabela.js";
-import { UUIDV4 } from "sequelize";
 
 const app = express();
 const PORT = 3000;
@@ -20,6 +19,7 @@ conn
   .catch((error) => console.log(error));
 
 /**************************** INICIO DAS ROTAS PARA SETORES *****************************/
+// Listar todas
 app.get("/setores", async (req, res) => {
   try {
     const setores = await setorTabela.findAll(); //SELECT * FROM setores
@@ -40,6 +40,39 @@ app.post("/setores", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Erro interno ao cadastrar setor" });
+  }
+});
+
+//Listar um setor pelo id
+app.get("/setores/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const setorSelecionado = await setorTabela.findOne({ where: { id: id } });
+    if (setorSelecionado) {
+      res.status(200).json(setorSelecionado);
+    } else if (!setorSelecionado) {
+      res.status(404).json({ message: "Setor não encontrado" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//Deletar um Setor pelo id
+app.delete("/setores/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    await setorTabela.destroy({ where: { id: id } });
+    const setorSelecionado = await setorTabela.findOne({ where: { id: id } });
+
+    if (setorSelecionado === null) {
+      res.status(200).json({ message: "Excluido com sucesso!" });
+    } else {
+      res.status(404).json({ message: "ID não encontrado" });
+    }
+  } catch (error) {
+    console.log(error);
   }
 });
 
